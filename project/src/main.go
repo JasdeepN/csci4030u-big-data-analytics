@@ -7,6 +7,8 @@ import (
 "os"
 "strings"
 "strconv"
+"container/list"
+
 )
 
 func main() {
@@ -15,7 +17,7 @@ func main() {
 
     var oldMap map [string]int 
     oldMap = make(map[string]int)
-    _ = oldMap
+    // _ = oldMap
 
     basket_total := 0
     threshold := 2 // items that appear >= threshold = frequent items
@@ -24,7 +26,7 @@ func main() {
 
     currMap, basket_total = _passOne("small_data.dat")
 
-    _printMap(currMap)
+   // _printMap(currMap)
 
     oldMap, currMap = _passTwo(currMap, threshold)
 
@@ -91,9 +93,26 @@ func _passTwo(args map[string]int, threshold int) (map[string]int, map[string]in
     //making old item map
     for key := range args {
         count++
-        newMap[strconv.Itoa(count)] = args[key] 
+
+        n, err := strconv.Atoi(key); 
+        if err != nil { 
+            fmt.Println("error parsing string"f) 
+        } 
+        newMap[strconv.Itoa(count)] = n
     }
 
     return args, newMap
 }
 
+func _pairItems(args map[string]int) (map[string]int){
+    tempList := list.new()  
+    for key := range args {
+        list.PushBack(new pair(key, args[key+1]))//FIX HERE
+    }
+    return args
+}
+
+type pair struct {
+    item1 string
+    item2 string
+}
