@@ -19,11 +19,33 @@ func main() {
 
     _ = threshold // fixes the "declared but not used err"
 
-   file, err := os.Open("small_data.dat") //101 items only
+    first_pass, basket_total = _readData("small_data.dat", )
+
+    fmt.Println("total baskets: ", basket_total)
+    //fmt.Println("Map: ", first_pass)
+    
+    _printMap(first_pass)
+
+}
+
+func _printMap(input map[string]int)  {
+    for key, value := range input {
+        fmt.Println("Key:", key, "Value:", value)
+    }
+
+}
+
+func _readData(input_file string) (map[string]int, int)  {
+    var inital_map map [string]int
+    inital_map = make(map[string]int)
+    basket_total := 0
+
+
+    file, err := os.Open(input_file) //101 items only
     //file, err := os.Open("retail.dat") //full data
 
-   if err != nil {
-    log.Fatal(err)
+    if err != nil {
+        log.Fatal(err)
     }
     defer file.Close()
 
@@ -35,25 +57,16 @@ func main() {
         words := strings.Fields(scanner.Text())
 
         for(count < len(words)){
-            first_pass[words[count]] = first_pass[words[count]] + 1
+            inital_map[words[count]] = inital_map[words[count]] + 1
             count++ 
         }
-       
+
     }
 
     if err := scanner.Err(); err != nil {
         log.Fatal(err)
     }
-
-    fmt.Println("total baskets: ", basket_total)
-    //fmt.Println("Map: ", first_pass)
-    
-    _printMap(first_pass)
-   
+    return inital_map, basket_total
 }
 
-func _printMap(input map[string]int)  {
-     for key, value := range input {
-        fmt.Println("Key:", key, "Value:", value)
-    }
-}
+
