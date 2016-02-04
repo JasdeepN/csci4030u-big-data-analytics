@@ -12,8 +12,8 @@ import (
 )
 
 func main() {
-    var mainMap map [string]int 
-    mainMap = make(map[string]int)
+    var mainMap map [pair]int 
+    mainMap = make(map[pair]int)
     _ = mainMap
 
     basket_total := 0
@@ -24,7 +24,7 @@ func main() {
 
     fmt.Println("total baskets: ", basket_total)
     //fmt.Println("Map: ")
-    //_printMap(mainMap)
+    //_printMapPair(mainMap)
 }
 
 func _printMap(args map[string]int)  {
@@ -33,22 +33,25 @@ func _printMap(args map[string]int)  {
     }
 }
 
-func _apriori(input_file string, pass int) (map[string]int, int)  {
+func _printMapPair(args map[pair]int)  {
+    for key, value := range args {
+        fmt.Println("Key:", key, "Value:", value)
+    }
+}
+
+func _apriori(input_file string, pass int) (map[pair]int, int)  {
     check := 0
     items := 0
     threshold := 0.0
     basket_total := 0.0
-    s := 0.01
-    _ = s
 
     pairs := pair{}
 
-    var inital_map map [string]int
-    inital_map = make(map[string]int)
-    _ = inital_map
-
     var temp_map map [string]int
     temp_map = make(map[string]int)
+
+    var baskets map[string]int
+    baskets = make(map[string]int)
 
     file, err := os.Open(input_file) 
 
@@ -67,14 +70,13 @@ func _apriori(input_file string, pass int) (map[string]int, int)  {
             items = items + len(words) //number of items
 
             for(count < len(words)){
-                temp_map[words[count]] = temp_map[words[count]] + 1
+                baskets[words[count]] = baskets[words[count]] + 1
                 count++ 
-                //fmt.Println("count < words[count] ",  inital_map[words[count]])
             }
         }
-        _copyMap(temp_map, inital_map) //copy before removing items
-        // _printMap(inital_map)
-        // fmt.Println("inital_map")
+        _copyMap(baskets, temp_map)
+        //_printMap(temp_map)
+        //fmt.Println("temp_map")
 
         if err := scanner.Err(); err != nil {
             log.Fatal(err)
@@ -82,11 +84,14 @@ func _apriori(input_file string, pass int) (map[string]int, int)  {
         check++
     }
 
-    //threshold = s * basket_total //881
-    threshold = 10000 //test
+    //threshold = 0.01 * basket_total //881
+    threshold = 10000   //test
     
     var oldItems map [string]int 
     oldItems = make(map[string]int)
+
+    var final_map map [pair]int 
+    final_map = make(map[pair]int)
 
     for check < pass {
         check++
@@ -98,8 +103,7 @@ func _apriori(input_file string, pass int) (map[string]int, int)  {
                 delete(temp_map, key)
             }
         }
-        pairs = _pairItems(temp_map)
-       // _printMap(temp_map)
+
     //done making frequent itmes
         _ = pairs
     //making old item map
@@ -111,13 +115,24 @@ func _apriori(input_file string, pass int) (map[string]int, int)  {
             } 
             oldItems[strconv.Itoa(count)] = n
         }
-        fmt.Println("passes ", check)
     }
+
+    pairs = _pairItems(temp_map)
+    pairs = _match(pairs, baskets)
+
+    fmt.Println("passes ", check)
     fmt.Println("threshold ", threshold)
-    _printPairs(pairs)
+    //_printPairs(pairs)
+    //_printMapPair(final_map)
+    return final_map, int(basket_total)
 
-    return oldItems, int(basket_total)
+}
 
+func _match(args pair, baskets map[string]int) (result pair){
+    for key, value := range baskets {
+        fmt.Println("key", key, value)
+    }
+    return args
 }
 
 func _copyMap(args map[string]int, newMap map[string]int) {
@@ -126,43 +141,24 @@ func _copyMap(args map[string]int, newMap map[string]int) {
     }
 }
 
-func _printPairs(x pair){
-    current := pair{}
+func _printPairs(args pair){
+    if args.item1 == 0 && args.item2 == 0 {
 
-    if (x.prev != nil){
-        fmt.Println("(", current.item1, current.item2, ")")
-        current = *x.prev
-
-    } //move pointer back 1 so we dont get {0, 0}
-
-    for(current.prev != nil){
-        if current.item1 != 0 && current.item2 != 0 {
-            fmt.Println("(", current.item1, current.item2, ")")
-            current = *current.prev
-        }
-
-    }
-
-    if (current.prev == nil) {
-        fmt.Println("(", current.item1, current.item2, ")")
-    }
-}
-
-func _pairCheck(n int, w int, args pair) (bool){
-    if (args.prev != nil){
+       // fmt.Println("(", args.item1, args.item2, ")")
         args = *args.prev
-    } 
-    for(args.prev != nil){
-       // fmt.item1
-        if args.item1 == n && args.item2 == w {
-            fmt.Println("duplicate")
-            return false
-        } else {
-            args = *args.prev
+    //move pointer back 1 so we dont get {0, 0}
 
+        for(args.prev != nil){
+            if args.item1 != 0 && args.item2 != 0 {
+                fmt.Println("(", args.item1, args.item2, ")")
+                args = *args.prev
+            }
+        }
+
+        if (args.prev == nil) {
+            fmt.Println("(", args.item1, args.item2, ")")
         }
     }
-    return true
 }
 
 func _pairItems(args map[string]int) (x pair){
@@ -186,30 +182,28 @@ func _pairItems(args map[string]int) (x pair){
         count++
     }
        //for key2 := range args {
-    fmt.Println(slice)
+    //fmt.Println(slice)
 
     y = 0
     m := 0
 
-    for (y < len(slice)){
-        m = 0
-        for (m < len(slice)){
-            if (slice[y] != slice[m]){ // removes duplicates
-                if (slice[y] != slice[m]) {
-               
-                    current.item1 = slice[y]
-                    current.item2 = slice[m]
-                   // fmt.Println("---", current.item1, current.item2, y, m)
-                   // fmt.Println(current.item1 == slice[y] && current.item2 == slice[m])
-                    //fmt.Println("different")
+    temp := slice
 
-                    tempNode := current
-                    current = newPair
-                    current.prev = &tempNode
-                } 
+    for (y < len(temp)){
+        m = 0
+        for (m < len(temp)){
+            if (temp[y] < temp[m]){ // removes duplicates
+                //fmt.Println((temp[y] != slice[m]), temp[y], temp[m])
+
+                current.item1 = temp[y]
+                current.item2 = temp[m]
+
+                tempNode := current
+                current = newPair
+                current.prev = &tempNode  
             }
             m++
-        }
+        }   
         y++
     }
    //_printPairs(current)
