@@ -17,9 +17,9 @@ func main() {
     // _ = mainMap
 
     basket_total := 0
-   
 
-    basket_total = _apriori("small_data.dat", 2, 3) //data, passes, support
+
+    basket_total = _apriori("retail.dat", 2, 10000) //data, passes, support
 
     fmt.Println("total baskets: ", basket_total)
 //    fmt.Println("Map: ", mainMap)
@@ -74,18 +74,23 @@ func _apriori(input_file string, pass int, support int) (int)  {
         for check < pass {
             check++
     //frequent items
-            for key, value := range baskets {
+            for key, value := range temp_map {
                 count := 0
-                for count < len(value){
-                    fmt.Println(temp_map[count])
-                    if temp_map[count] < support {
+                count2 := 0
+                for count < (value){
+                    if temp_map[key] < support {
                         delete(temp_map, key)
                         count++
+                        count2++
+                    } else {
+                         count++
+                        count2++
                     }
                 }
             }
             fmt.Println("map")
             _printMap(temp_map)
+           // _printMap2(baskets)
         }
     }
 
@@ -119,6 +124,12 @@ type list struct{
 
 
 func _printMap(args map[int]int)  {
+    for key, value := range args {
+        fmt.Println("Key:", key, "Value:", value)
+    }
+}
+
+func _printMap2(args map[int][]int)  {
     for key, value := range args {
         fmt.Println("Key:", key, "Value:", value)
     }
