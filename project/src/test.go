@@ -10,7 +10,6 @@ import (
 
 )
 
-//Calls _apriori for k number of passes
 func main() {
     // var mainMap map [pair]int 
     // mainMap = make(map[pair]int)
@@ -19,13 +18,13 @@ func main() {
     basket_total := 0
 
 
-    basket_total = _apriori("retail.dat", 2, 10000) //data, passes, support
+    _printMap2(_apriori("small_data.dat", 2, 2)) //data, passes, support
 
     fmt.Println("total baskets: ", basket_total)
-//    fmt.Println("Map: ", mainMap)
+    //_printMap2("Map: ", mainMap)
 }
 
-func _apriori(input_file string, pass int, support int) (int)  {
+func _apriori(input_file string, pass int, support int) (map[pair]int)  {
     check := 0
     items := 0
     basket_total := 0
@@ -48,7 +47,6 @@ func _apriori(input_file string, pass int, support int) (int)  {
     if check == 0 {// load all items into the map one by one
         scanner := bufio.NewScanner(file)
         for scanner.Scan() {
-        // fmt.Println(scanner.Text())
             count := 0
             basket_total = basket_total + 1 //total number of baskets
             words := strings.Fields(scanner.Text()) //seperating the strings
@@ -73,6 +71,7 @@ func _apriori(input_file string, pass int, support int) (int)  {
 
         for check < pass {
             check++
+
     //frequent items
             for key, value := range temp_map {
                 count := 0
@@ -83,13 +82,14 @@ func _apriori(input_file string, pass int, support int) (int)  {
                         count++
                         count2++
                     } else {
-                         count++
+                        count++
                         count2++
                     }
                 }
             }
+
             fmt.Println("map")
-            _printMap(temp_map)
+            //_printMap(temp_map)
            // _printMap2(baskets)
         }
     }
@@ -97,21 +97,25 @@ func _apriori(input_file string, pass int, support int) (int)  {
     //done making frequent itmes
     _ = pairs
 
-    // pairs = _pairItems(temp_map)
-    // temp_map = nil //free memory yay
+    pairs = _pairItems(temp_map)
 
-    // var final_map map [pair]int 
-    // final_map = make(map[pair]int)
+    temp_map = nil //free memory yay
 
-    // final_map = _match(pairs, baskets)
+    var final_map map [pair]int 
+    final_map = make(map[pair]int)
+
+    final_map = _match(pairs, baskets)
+
+    baskets = nil
 
     fmt.Println("passes ", check)
     fmt.Println("threshold ", support)
 
-    return int(basket_total)
+    return final_map
 }
 
 type pair struct {
+    prev *pair
     item1 int
     item2 int
 }
@@ -129,8 +133,82 @@ func _printMap(args map[int]int)  {
     }
 }
 
-func _printMap2(args map[int][]int)  {
+func _printMap2(args map[pair]int)  {
     for key, value := range args {
         fmt.Println("Key:", key, "Value:", value)
     }
+}
+
+func _pairItems(args map[int]int) (x pair){
+
+    current := pair{}
+    newPair := pair{}
+    count := 0
+    y := 0
+    m := 0
+
+    length := len(args)
+    slice := make([]int, length)
+    temp := slice
+
+
+    for key := range args {
+        slice[count] = key
+        count++
+    }
+
+    for (y < len(temp)){
+        m = 0
+        for (m < len(temp)){
+            if (temp[y] < temp[m]){ // removes duplicates
+                current.item1 = temp[y]
+                current.item2 = temp[m]
+                if m != len(temp) {
+                    tempNode := current
+                    current = newPair
+                    current.prev = &tempNode  
+                }
+            }
+            m++
+        }   
+        y++
+    }
+    fmt.Println("items paired sucessfully")
+    return current 
+}
+
+func _match(args pair, baskets map[int][]int, support int) (map[pair]int){
+    count := 0
+    count2 := 0
+
+    var final map [pair]int 
+    final = make(map[pair]int)
+
+    // if (args.item1 == 0 && args.item2 == 0){
+    //     args = *args.prev
+    //     fmt.Println("set pointer back 1")
+    // }
+
+    for key, array := range baskets {
+        _ = key
+        
+        count = 0
+        for count < len(array){
+            if args.item1 == array[count]{
+                count2 = 0
+                for count2 < len(array){
+                    if args.item2 == array[count2]{
+                        final[args] = final[args] + 1
+                    }
+                    count2++
+                }
+            }
+            count++
+            if args.prev != nil {
+                args = *args.prev
+            }
+        }
+                fmt.Println(final[args])
+    }
+    return final
 }
