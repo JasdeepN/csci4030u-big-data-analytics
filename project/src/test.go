@@ -77,6 +77,7 @@ func _apriori(input_file string, pass int, support int) (int)  {
             for key, value := range baskets {
                 count := 0
                 for count < len(value){
+                    fmt.Println(temp_map[count])
                     if temp_map[count] < support {
                         delete(temp_map, key)
                         count++
