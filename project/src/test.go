@@ -16,7 +16,7 @@ func main() {
     // _ = mainMap
 
 
-    _printMap2(_apriori("retail.dat", 2, 10000)) //data, passes, support
+    _printMap(_apriori("retail.dat", 2, 10000)) //data, passes, support
 
 }
 
@@ -25,7 +25,7 @@ func _apriori(input_file string, pass int, support int) (map[pair]int)  {
     items := 0
     basket_total := 0
 
-    pairs := pair{}
+    //pairs := pair{}
 
     var temp_map map [int]int
     temp_map = make(map[int]int)
@@ -61,75 +61,131 @@ func _apriori(input_file string, pass int, support int) (map[pair]int)  {
             baskets[basket_total] = result
         }
         check++
-
-
-
-        for check < pass {
-            check++
-
-    //frequent items
-            for key, value := range temp_map {
-                count := 0
-                count2 := 0
-                for count < (value){
-                    if temp_map[key] < support {
-                        delete(temp_map, key)
-                        count++
-                        count2++
-                    } else {
-                        count++
-                        count2++
-                    }
-                }
-            }
-            fmt.Println("map")
-        }
     }
 
+    for check < pass {
+        check++
+
+            //frequent items
+        for key, value := range temp_map {
+            count := 0
+            count2 := 0
+            for count < (value){
+                if temp_map[key] < support {
+                    delete(temp_map, key)
+                    count++
+                    count2++
+                } else {
+                    count++
+                    count2++
+                }
+            }
+        }
+    }
+    
     //done making frequent itmes
 
-    pairs = _pairItems(temp_map)
+    // pairs = _pairItems(temp_map)
+    //PAIR START
 
+    current := pair{}
+    count := 0
+    y := 0
+    m := 0
+
+    length := len(temp_map)
+    slice := make([]int, length)
+    tempSlice := slice
+
+    PList := list{}
+    PList.last = &current
+    //fmt.Println("\tPLIST",PList)
+
+    for key := range temp_map {
+        slice[count] = key
+        count++
+    }
+
+    for (y < len(tempSlice)){
+        m = 0
+        newPair := pair{}
+        tempPair := pair{}
+        for (m < len(tempSlice)){
+            if (tempSlice[y] < tempSlice[m]){ // removes duplicates
+                tempPair = current 
+                PList.current = &newPair
+                //PList.last = &tempPair             
+                PList.current.prev = &tempPair
+                fmt.Println("\t--- current ", *PList.current)//debug lines
+                fmt.Println("\t\t----- current.prev", *PList.current.prev)
+                fmt.Println("\t\t\t----- PList.last", *PList.last)
+                fmt.Println("")
+
+                current.item1 = tempSlice[y]
+                current.item2 = tempSlice[m]
+
+                PList.current = &current
+            }
+            m++
+        }  
+        y++
+        printPairs(PList)       
+
+    }
+
+
+
+    //fmt.Println("should be full\n", current)
     temp_map = nil //free memory yay
+
+    //PAIRS END
+    //
 
     var final_map map [pair]int 
     final_map = make(map[pair]int)
 
-    final_map = _match(pairs, baskets, support)
+    final_map = _match(PList, baskets, support)
     baskets = nil
 
     fmt.Println("items", items)
     fmt.Println("passes ", check)
     fmt.Println("threshold ", support)
     fmt.Println("baskets ", basket_total)
+   // printPairs(PList)
     return final_map
 }
 
 type pair struct {
-    end bool
-    prev *pair
     item1 int
     item2 int
+    prev *pair
 }
 
+type list struct {
+    current *pair
+    last *pair
+}
 
-func _printMap(args map[int]int)  {
-    for key, value := range args {
-        fmt.Println("Key:", key, "Value:", value)
+func printPairs(args list){
+   //fmt.Println("\t\tpair print",*args.current)
+    for args.last.prev != nil{
+        args.current = args.last
+        fmt.Println(*args.current)
     }
 }
 
-func _printMap2(args map[pair]int)  {
+
+func _printMap(args map[pair]int)  {
     fmt.Println("print map")
     for key, value := range args {
         fmt.Println("Key:", key, "Value:", value)
     }
 }
 
-func _pairItems(args map[int]int) (x pair){
+/*func _pairItems(args map[int]int) (x pair){
 
     current := pair{}
-    newPair := pair{}
+
     count := 0
     y := 0
     m := 0
@@ -146,80 +202,74 @@ func _pairItems(args map[int]int) (x pair){
 
     for (y < len(temp)){
         m = 0
+       // newPair := pair{}
         for (m < len(temp)){
             if (temp[y] < temp[m]){ // removes duplicates
-                current.end = false
                 current.item1 = temp[y]
-                current.item2 = temp[m]
-                if m != len(temp) {
-                    tempNode := current
-                    current := newPair
-                   // current.end = false
-                    current.prev = &tempNode  
+                current.item2 = temp[m] 
 
-                }
+                temp := current 
+                current.prev = &temp 
+                //current.next = &newPair
+                current = *current.next 
             }
-            //fmt.Println(current)
             m++
-        }   
+        }  
         y++
     }
-    current.end = true
     fmt.Println("items paired sucessfully")
     return current 
-}
+    }*/
 
-func _match(args pair, baskets map[int][]int, support int) (map[pair]int){
-    count := 0
-    count2 := 0
+    func _match(args list, baskets map[int][]int, support int) (map[pair]int){
+        count := 0
+        count2 := 0
 
-    var final map [pair]int 
-    final = make(map[pair]int)
+        var final map [pair]int 
+        final = make(map[pair]int)
 
     // if (args.item1 == 0 && args.item2 == 0){
-    //     args.prev.end = true
-    //     //fmt.Println(args.prev)
+    //     args.current.end = true
+    //     //fmt.Println(args.current)
     //     //fmt.Println("set pointer back 1")
     // }
 
-    for (args.end != true){
-        fmt.Println("matcher ",args)
-        args = *args.prev
-    }
+    // for key, value := range baskets{
+    //     fmt.Println(key, value)
+    // }
+        fmt.Println(args)
+    // for (args.prev != nil){
+    //     fmt.Println("matcher ",args)
+    //     args = args.prev
+    // }
 
-    for key, array := range baskets {
-        _ = key
-        
-        count = 0
-        for count < len(array){
-            if args.item1 == array[count]{
-                count2 = 0
-                for count2 < len(array){
-                    if args.item2 == array[count2]{
-                        final[args] = final[args] + 1
-                        //fmt.Println("final", final[args])
-                    }
-                    count2++
+        for key, array := range baskets {
+            _ = key      
+            count = 0
+            for count < len(array){
+                if args.current.item1 == array[count]{
+                    count2 = 0
+                    for count2 < len(array){
+                        if args.current.item2 == array[count2]{
+                            final[*(args.current)] = final[*(args.current)] + 1
+                        }
+                        count2++
+                    }                
                 }
-                if args.end == false {
-                    args = *args.prev
-                }
-                    //fmt.Println(args)
+                count++
             }
-            count++
-            if args.end == false {
-                args = *args.prev
+            if args.current != nil {
+                args.current = args.last
             }
         }
-    }
 
-    for key := range final {
-        if final[key] < support {
-            delete(final, key)
+        for key := range final {
+            if final[key] < support {
+                delete(final, key)
+            }
         }
-    }
-    fmt.Println("final", final[args])
-    _printMap2(final)
+    //fmt.Println("\n\nfinal", final[args])
+        _printMap(final)
 
-    return final
-}
+        return final
+    }
