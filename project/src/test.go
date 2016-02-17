@@ -11,10 +11,11 @@ import (
 )
 
 func main() {
-	(_apriori("retail.dat", 2, 10000)) //data, passes, support
+    //calls _printMap
+	_apriori("retail.dat", 2, 3000) //data, passes, support
 }
 
-func _apriori(input_file string, pass int, support int) map[int]int {
+func _apriori(input_file string, pass int, support int) (map[int]int){
 	check := 0
 	items := 0
 	basket_total := 0
@@ -25,14 +26,17 @@ func _apriori(input_file string, pass int, support int) map[int]int {
 	var baskets map[int][]int
 	baskets = make(map[int][]int)
 
+    //open file for reading
 	file, err := os.Open(input_file)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
+    /*FIRST PASS*/
+
 	defer file.Close()
-	if check == 0 { // load all items into the map one by one
+	if check == 0 { // load all items into the map one by one (first pass)
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			count := 0
@@ -55,9 +59,12 @@ func _apriori(input_file string, pass int, support int) map[int]int {
 		check++
 	}
 
-	for check < pass { //check this after
+    /*FIRST PASS END*/
+
+    /*MAKING FREQUENT PAIRS*/
+
+	for check < pass { //NUMBER OF PASSES (need this? prob not in theory could do more passes with some changes)
 		check++
-		//frequent items
 		for key, value := range temp_map {
 			count := 0
 			for count < (value) {
@@ -69,29 +76,32 @@ func _apriori(input_file string, pass int, support int) map[int]int {
 				}
 			}
 		}
-		//frequent items end
 	}
-	// fmt.Println(temp_map)
-	// fmt.Println(baskets[1])
-	// r := sort.Ints(baskets[1])
-	// fmt.Println(baskets[1], r)
-	//fmt.Println("temp", temp_map)
+
+    /*END MAKING FREQUENT PAIRS*/
+	
+    //pair items
 	slice := _pairItems(temp_map)
 
-	fmt.Println(slice, "returned")
-	temp_map = nil //free memory yay
+    //dont need item counts anymore garbage collection should take over
+	temp_map = nil 
 
+    //final results
 	var final_map map[int]int
 	final_map = make(map[int]int)
 
+    //matching frequent items in baskets
 	final_map = _match(slice, baskets, support)
+
+    //dont need the baskets anymore
 	baskets = nil
 
-	fmt.Println("items", items)
+    //checks
+	/*fmt.Println("items", items)
 	fmt.Println("passes ", check)
 	fmt.Println("threshold ", support)
-	fmt.Println("baskets ", basket_total)
-	// printPairs(PList)
+	fmt.Println("baskets ", basket_total)*/
+    _printMap(final_map, slice)
 	return final_map
 }
 
@@ -114,50 +124,33 @@ func _pairItems(args map[int]int) (slice [][]int) {
 
     temp_keys := make([]int, len(keys))
     copy(temp_keys, keys)
-	//fmt.Println(keys)
 
     if (len(temp_keys)>0){
        temp_keys = temp_keys[1:]
    }
 
    for key, _ := range keys {
-        //fmt.Println("inital", keys, temp_keys)
     if (len(temp_keys)>1){
-
         for key2, _ := range temp_keys {
             temp := make([]int, 2)
             if keys[key] < temp_keys[key2] {
-                    //fmt.Println(temp, "\t\t\t\tTEMP")
-               //     fmt.Println(keys[0], temp_keys[key2])
                 temp[0] = keys[0]
                 temp[1] = temp_keys[key2]
-                    /*temp = append (temp, keys[0])
-                temp = append (temp, temp_keys[key2])*/
-                   // fmt.Println(temp, "\t\t\t\tTEMP AFTER")
-
                 final_pairs = append(final_pairs, temp)
                 temp = nil
-
             } else {
-             //       fmt.Println(temp_keys[key2], keys[0])
                 temp[0] = temp_keys[key2]
                 temp[1] = keys[0]
-                   // fmt.Println(temp, "\t\t\t\tTEMP AFTER ELSE") 
                 final_pairs = append(final_pairs, temp)
-
                 temp = nil
-
             }
         }
     } else {
         if (len(temp_keys) > 0){
             temp := make([]int, 2)
-           // fmt.Println(keys[0], temp_keys[0])
             temp[0] = keys[0]
             temp[1] = temp_keys[0]
-                //fmt.Println(temp, "\t\t\t\tTEMP AFTER ELSE ELSE")
             final_pairs = append(final_pairs, temp)
-
             temp = nil
         }
             break; //reached the end
@@ -165,16 +158,11 @@ func _pairItems(args map[int]int) (slice [][]int) {
 
         temp_keys = temp_keys[1:]
         keys = keys[1:]
-        //fmt.Println(keys, temp_keys)
     }
-   // fmt.Println(final_pairs)
-   // fmt.Println(keys)
-
     return final_pairs
 }
 
 func _match(pairs [][]int, baskets map[int][]int, support int) map[int]int {
-
 	var final map[int]int
 	final = make(map[int]int)
 
@@ -199,8 +187,6 @@ func _match(pairs [][]int, baskets map[int][]int, support int) map[int]int {
         delete(final, key)
     }
 }
-
-_printMap(final, pairs)
 return final
 }
 
