@@ -14,7 +14,7 @@ func main() {
 	(_apriori("retail.dat", 2, 10000)) //data, passes, support
 }
 
-func _apriori(input_file string, pass int, support int) map[pair]int {
+func _apriori(input_file string, pass int, support int) map[int]int {
 	check := 0
 	items := 0
 	basket_total := 0
@@ -81,10 +81,10 @@ func _apriori(input_file string, pass int, support int) map[pair]int {
 	fmt.Println(slice, "returned")
 	temp_map = nil //free memory yay
 
-	var final_map map[pair]int
-	final_map = make(map[pair]int)
+	var final_map map[int]int
+	final_map = make(map[int]int)
 
-	//final_map = _match(slice, baskets, support)
+	final_map = _match(slice, baskets, support)
 	baskets = nil
 
 	fmt.Println("items", items)
@@ -95,15 +95,11 @@ func _apriori(input_file string, pass int, support int) map[pair]int {
 	return final_map
 }
 
-type pair struct {
-	item1 int
-	item2 int
-}
 
-func _printMap(args map[pair]int) {
+func _printMap(args map[int]int, pairs [][]int) {
 	fmt.Println("print map")
 	for key, value := range args {
-		fmt.Println("Key:", key, "Value:", value)
+		fmt.Println("Key:", pairs[key], "Value:", value)
 	}
 }
 
@@ -120,49 +116,53 @@ func _pairItems(args map[int]int) (slice [][]int) {
     copy(temp_keys, keys)
 	//fmt.Println(keys)
 
-    i := 0
+    if (len(temp_keys)>0){
+       temp_keys = temp_keys[1:]
+   }
 
-    temp_keys = temp_keys[1:]
-    for key, _ := range keys {
+   for key, _ := range keys {
         //fmt.Println("inital", keys, temp_keys)
-        if (len(temp_keys)>1){
-            for key2, _ := range temp_keys {
-                temp := make([]int, 2)
-                if keys[key] < temp_keys[key2] {
+    if (len(temp_keys)>1){
+
+        for key2, _ := range temp_keys {
+            temp := make([]int, 2)
+            if keys[key] < temp_keys[key2] {
                     //fmt.Println(temp, "\t\t\t\tTEMP")
                //     fmt.Println(keys[0], temp_keys[key2])
-                    temp[0] = keys[0]
-                    temp[1] = temp_keys[key2]
+                temp[0] = keys[0]
+                temp[1] = temp_keys[key2]
                     /*temp = append (temp, keys[0])
-                    temp = append (temp, temp_keys[key2])*/
-                    fmt.Println(temp, "\t\t\t\tTEMP AFTER")
+                temp = append (temp, temp_keys[key2])*/
+                   // fmt.Println(temp, "\t\t\t\tTEMP AFTER")
 
-                    final_pairs = append(final_pairs, temp)
-                    temp = nil
-                    i++
-                } else {
+                final_pairs = append(final_pairs, temp)
+                temp = nil
+
+            } else {
              //       fmt.Println(temp_keys[key2], keys[0])
-                    temp[0] = temp_keys[key2]
-                    temp[1] = keys[0]
-                    fmt.Println(temp, "\t\t\t\tTEMP AFTER") 
-                    final_pairs = append(final_pairs, temp)
+                temp[0] = temp_keys[key2]
+                temp[1] = keys[0]
+                   // fmt.Println(temp, "\t\t\t\tTEMP AFTER ELSE") 
+                final_pairs = append(final_pairs, temp)
 
-                    temp = nil
+                temp = nil
 
-                }
             }
-        } else {
+        }
+    } else {
+        if (len(temp_keys) > 0){
             temp := make([]int, 2)
            // fmt.Println(keys[0], temp_keys[0])
             temp[0] = keys[0]
             temp[1] = temp_keys[0]
-            fmt.Println(temp, "\t\t\t\tTEMP AFTER")
+                //fmt.Println(temp, "\t\t\t\tTEMP AFTER ELSE ELSE")
             final_pairs = append(final_pairs, temp)
 
             temp = nil
-
-            break;
         }
+            break; //reached the end
+        }
+
         temp_keys = temp_keys[1:]
         keys = keys[1:]
         //fmt.Println(keys, temp_keys)
@@ -173,24 +173,34 @@ func _pairItems(args map[int]int) (slice [][]int) {
     return final_pairs
 }
 
-func _match(slice []int, baskets map[int][]int, support int) map[pair]int {
+func _match(pairs [][]int, baskets map[int][]int, support int) map[int]int {
 
-	var final map[pair]int
-	final = make(map[pair]int)
+	var final map[int]int
+	final = make(map[int]int)
 
-	for key, array := range baskets {
-		_ = key
-		_ = array
-	}
+    match := 0
 
-	for key := range final {
-		if final[key] < support {
-			delete(final, key)
-		}
-	}
-	//fmt.Println("\n\nfinal", final[slice])
-
-	_printMap(final)
-
-	return final
+    for _, array := range baskets { //itterates over all baskets
+        for index,element := range pairs {  //itterates over frequent pairs
+            for x := range array {
+                if (array[x] == element[0]){
+                    for y := range array {
+                        if (array[y] == element[1]){
+                            match++
+                            final[index] = final[index]+1
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for key := range final {
+      if final[key] < support {
+        delete(final, key)
+    }
 }
+
+_printMap(final, pairs)
+return final
+}
+
