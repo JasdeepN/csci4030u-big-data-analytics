@@ -167,8 +167,8 @@ func _pairItems(args map[int]int) (slice [][]int) {
         keys = keys[1:]
         //fmt.Println(keys, temp_keys)
     }
-    fmt.Println(final_pairs)
-    fmt.Println(keys)
+   // fmt.Println(final_pairs)
+   // fmt.Println(keys)
 
     return final_pairs
 }
