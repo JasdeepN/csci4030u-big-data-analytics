@@ -71,11 +71,6 @@ func _apriori(input_file string, pass int, support int) map[int]int {
 		}
 		//frequent items end
 	}
-	// fmt.Println(temp_map)
-	// fmt.Println(baskets[1])
-	// r := sort.Ints(baskets[1])
-	// fmt.Println(baskets[1], r)
-	//fmt.Println("temp", temp_map)
 	slice := _pairItems(temp_map)
 
 	fmt.Println(slice, "returned")
@@ -91,7 +86,6 @@ func _apriori(input_file string, pass int, support int) map[int]int {
 	fmt.Println("passes ", check)
 	fmt.Println("threshold ", support)
 	fmt.Println("baskets ", basket_total)
-	// printPairs(PList)
 	return final_map
 }
 
@@ -114,53 +108,28 @@ func _pairItems(args map[int]int) (slice [][]int) {
 
 	temp_keys := make([]int, len(keys))
 	copy(temp_keys, keys)
-	//fmt.Println(keys)
 
 	if len(temp_keys) > 0 {
 		temp_keys = temp_keys[1:]
 	}
 
 	for key := range keys {
-		//fmt.Println("inital", keys, temp_keys)
 		_ = key
 		if len(temp_keys) > 1 {
 			for key2 := range temp_keys {
 				temp := make([]int, 2)
-				if len(temp_keys) > 1 {
-					//fmt.Println(temp, "\t\t\t\tTEMP")
-					//     fmt.Println(keys[0], temp_keys[key2])
-					temp[0] = keys[0]
-					temp[1] = temp_keys[key2]
-						/*temp = append (temp, keys[0])
-					temp = append (temp, temp_keys[key2])*/
-					// fmt.Println(temp, "\t\t\t\tTEMP AFTER")
+				temp[0] = keys[0]
+				temp[1] = temp_keys[key2]
 
-					final_pairs = append(final_pairs, temp)
-					temp = nil
-
-				} else {
-					//       fmt.Println(temp_keys[key2], keys[0])
-					temp[0] = temp_keys[key2]
-					temp[1] = keys[0]
-						// temp = append (temp, keys[0])
-						// temp = append (temp, temp_keys[key2])
-					// fmt.Println(temp, "\t\t\t\tTEMP AFTER ELSE")
-					final_pairs = append(final_pairs, temp)
-
-					temp = nil
-
-				}
+				final_pairs = append(final_pairs, temp)
+				temp = nil
 			}
-
 		} else {
 			if len(temp_keys) > 0 {
 				temp := make([]int, 2)
-				// fmt.Println(keys[0], temp_keys[0])
 				temp[0] = keys[0]
 				temp[1] = temp_keys[0]
-				//fmt.Println(temp, "\t\t\t\tTEMP AFTER ELSE ELSE")
 				final_pairs = append(final_pairs, temp)
-
 				temp = nil
 			}
 			break //reached the end
@@ -168,10 +137,6 @@ func _pairItems(args map[int]int) (slice [][]int) {
 
 		temp_keys = temp_keys[1:]
 		keys = keys[1:]
-		//fmt.Println(keys, temp_keys)
-
-	// fmt.Println(final_pairs)
-	// fmt.Println(keys)
 	}
 	return final_pairs
 }
