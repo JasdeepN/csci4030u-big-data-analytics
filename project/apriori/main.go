@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	(_apriori("retail.dat", 2, 881)) //data, passes, support
+	(_apriori("netflix.data", 2, 150000)) //data, passes, support
 }
 
 func _apriori(input_file string, pass int, support int) map[int]int {
@@ -34,6 +34,8 @@ func _apriori(input_file string, pass int, support int) map[int]int {
 	defer file.Close()
 	if check == 0 { // load all items into the map one by one
 		scanner := bufio.NewScanner(file)
+		var bufArr []byte
+		scanner.Buffer(bufArr, 262144)
 		for scanner.Scan() {
 			count := 0
 			basket_total = basket_total + 1         //total number of baskets
@@ -73,7 +75,7 @@ func _apriori(input_file string, pass int, support int) map[int]int {
 	}
 	slice := _pairItems(temp_map)
 
-	fmt.Println(slice, "returned")
+	//fmt.Println(slice, "returned")
 	temp_map = nil //free memory yay
 
 	var final_map map[int]int
@@ -125,7 +127,7 @@ func _pairItems(args map[int]int) (slice [][]int) {
 				temp = nil
 			}
 		} else {
-			if len(temp_keys) > 0 {
+			if len(temp_keys) == 1 {
 				temp := make([]int, 2)
 				temp[0] = keys[0]
 				temp[1] = temp_keys[0]
