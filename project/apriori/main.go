@@ -10,11 +10,29 @@ import (
 "strings"
 )
 
+
 func main() {
-	(_apriori("netflix.data", 2, 150000)) //data, passes, support
+	args := os.Args
+	//argsWithoutProg := os.Args[1:]
+
+	printflag, err := strconv.Atoi(args[3])
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+
+
+	support, err := strconv.ParseFloat(args[1], 64)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+
+	//fmt.Println("EXECUTING", args[0])
+	(_apriori(args[2], 2, support, printflag)) //data, passes, support, printflag
 }
 
-func _apriori(input_file string, pass int, support int) map[int]int {
+func _apriori(input_file string, pass int, support float64, printflag int) map[int]int {
 	check := 0
 	items := 0
 	basket_total := 0
@@ -57,13 +75,17 @@ func _apriori(input_file string, pass int, support int) map[int]int {
 		check++
 	}
 
+	// var temp float64
+	temp := (support*float64(basket_total))
+	threshold := int(temp)
+
 	for check < pass { //check this after
 		check++
 		//frequent items
 		for key, value := range temp_map {
 			count := 0
 			for count < (value) {
-				if temp_map[key] < support {
+				if temp_map[key] < threshold {
 					delete(temp_map, key)
 					count++
 				} else {
@@ -81,21 +103,41 @@ func _apriori(input_file string, pass int, support int) map[int]int {
 	var final_map map[int]int
 	final_map = make(map[int]int)
 
-	final_map = _match(slice, baskets, support)
+	final_map = _match(slice, baskets, threshold)
 	baskets = nil
 
-	fmt.Println("items", items)
+/*	fmt.Println("items", items)
 	fmt.Println("passes ", check)
-	fmt.Println("threshold ", support)
-	fmt.Println("baskets ", basket_total)
+	fmt.Println("threshold ", threshold)
+	fmt.Println("baskets ", basket_total, "\n")*/
+	if (printflag == 1){
+		_printMap(final_map, slice)
+		_printStats(items, basket_total, threshold, check, input_file)
+	}
 	return final_map
 }
 
+func _printStats(items int, numBaskets int, support int, passes int, input string) {
+	fmt.Println("+---------------------------------------+")
+	fmt.Println("|\t\tSTATISTICS\t\t|")
+	fmt.Println("+---------------------------------------+")
+	fmt.Println("|\t\t", input, "\t\t|")
+	fmt.Println("|\t      ITEMS:", items, "\t\t|")
+	fmt.Println("|\t        PASSES:", passes, "\t\t|")
+	fmt.Println("|\t     THRESHOLD:", support, "\t\t|")
+	fmt.Println("|\t      BASKETS:", numBaskets, "\t\t|")
+	fmt.Println("+---------------------------------------+")
+
+}
+
 func _printMap(args map[int]int, pairs [][]int) {
-	fmt.Println("print map")
+	fmt.Println("+---------------------------------------+")
+	fmt.Println("\t\tPRINTING MAP\t\t")
+	fmt.Println("+---------------------------------------+")
 	for key, value := range args {
-		fmt.Println("Key:", pairs[key], "Value:", value)
+		fmt.Println("\tKey:", pairs[key], "Value:", value, "\t")
 	}
+
 }
 
 func _pairItems(args map[int]int) (slice [][]int) {
@@ -170,6 +212,6 @@ func _match(pairs [][]int, baskets map[int][]int, support int) map[int]int {
 		}
 	}
 
-	_printMap(final, pairs)
+	//_printMap(final, pairs)
 	return final
 }
