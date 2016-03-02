@@ -18,8 +18,7 @@ for (( x = 0; x < 4; x++ )); do
 
 	start=$(date +%s.%N)
 
-	# ./apriori netflix.data ${arr[x]} 0
-	./apriori retail.dat ${arr[x]} 0
+	./apriori netflix.data ${arr[x]} 0
 
 	dur=$(echo "$(date +%s.%N) - $start" | bc)
 
@@ -30,7 +29,7 @@ for (( x = 0; x < 4; x++ )); do
 	#forces new line
 	# echo -e "\e[40m\e[91mRun Complete $i\e[0m";
 
-	done
+done
 echo ""
 done
 
